@@ -16,6 +16,8 @@
 
 package com.ververica.cdc.connectors.oceanbase.table;
 
+import com.oceanbase.oms.logmessage.DataMessage;
+import io.debezium.data.Envelope;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
@@ -84,19 +86,19 @@ public enum OceanBaseReadableMetadata {
     OP_TYPE(
             "op_type",
             DataTypes.STRING().notNull(),
-            new MetadataConverter() {
+            new OceanBaseMetadataConverter() {
                 private static final long serialVersionUID = 1L;
-
                 @Override
-                public Object read(SourceRecord record) {
-                    final Envelope.Operation op = Envelope.operationFor(record);
-                    if (op == Envelope.Operation.CREATE || op == Envelope.Operation.READ) {
+                public Object read(OceanBaseRecord record) {
+                    DataMessage.Record.Type op = record.getOpt();
+                    if (op.equals(DataMessage.Record.Type.INSERT)) {
                         return StringData.fromString(OperationConstants.INSERT);
-                    } else if (op == Envelope.Operation.DELETE) {
+                    } else if (op.equals(DataMessage.Record.Type.DELETE)) {
                         return StringData.fromString(OperationConstants.DELETE);
-                    } else {
+                    } else if(op.equals(DataMessage.Record.Type.UPDATE)) {
                         return StringData.fromString(OperationConstants.UPDATE);
                     }
+                    return "ORTHER";
                 }
             });
 
