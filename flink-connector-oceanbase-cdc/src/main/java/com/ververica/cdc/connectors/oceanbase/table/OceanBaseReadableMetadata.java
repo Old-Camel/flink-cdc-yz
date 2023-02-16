@@ -16,12 +16,12 @@
 
 package com.ververica.cdc.connectors.oceanbase.table;
 
-import com.oceanbase.oms.logmessage.DataMessage;
-import io.debezium.data.Envelope;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.table.types.DataType;
+
+import com.oceanbase.oms.logmessage.DataMessage;
 
 /** Defines the supported metadata columns for {@link OceanBaseTableSource}. */
 public enum OceanBaseReadableMetadata {
@@ -88,6 +88,7 @@ public enum OceanBaseReadableMetadata {
             DataTypes.STRING().notNull(),
             new OceanBaseMetadataConverter() {
                 private static final long serialVersionUID = 1L;
+
                 @Override
                 public Object read(OceanBaseRecord record) {
                     DataMessage.Record.Type op = record.getOpt();
@@ -95,10 +96,11 @@ public enum OceanBaseReadableMetadata {
                         return StringData.fromString(OperationConstants.INSERT);
                     } else if (op.equals(DataMessage.Record.Type.DELETE)) {
                         return StringData.fromString(OperationConstants.DELETE);
-                    } else if(op.equals(DataMessage.Record.Type.UPDATE)) {
+                    } else if (op.equals(DataMessage.Record.Type.UPDATE)) {
                         return StringData.fromString(OperationConstants.UPDATE);
+                    } else {
+                        return StringData.fromString(OperationConstants.ORTHER);
                     }
-                    return "ORTHER";
                 }
             });
 
@@ -130,5 +132,6 @@ public enum OceanBaseReadableMetadata {
         public static final String INSERT = "INSERT";
         public static final String DELETE = "DELETE";
         public static final String UPDATE = "UPDATE";
+        public static final String ORTHER = "ORTHER";
     }
 }
